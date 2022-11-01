@@ -1,0 +1,213 @@
+﻿<Window x:Class="Pes21Editing.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Pes21Editing"
+        xmlns:converter="clr-namespace:Pes21Editing.Converters"
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+        xmlns:pes="clr-namespace:Pes2021Api;assembly=Pes2021Api"
+        xmlns:dd="urn:gong-wpf-dragdrop"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+
+    <Window.Resources>
+        <converter:BooleanToVisibilityConverter x:Key="b2v" True="Visible" False="Collapsed" />
+        <converter:BooleanToVisibilityConverter x:Key="b2vn" True="Collapsed" False="Visible" />
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <ToolBarTray Grid.ColumnSpan="10">
+            <ToolBar>
+                <Button x:Name="btnSaveSquads" Content="Save Squads" 
+                        Click="btnSaveSquads_Click" />
+                
+                <Button x:Name="btnUnzlibDir" Content="Unzlib Directory"
+                        Click="btnUnzlibDir_Click" />
+
+                <Button x:Name="btnReload" Content="Reload"
+                        Click="btnReload_Click" />
+            </ToolBar>
+        </ToolBarTray>
+
+        <DockPanel Grid.Row="1" Grid.Column="0">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="3">
+                <TextBlock Text="PES 21 Teams  (" />
+                <TextBlock Text="{Binding ElementName=lstPesTeams, Path=Items.Count}" />
+                <TextBlock Text=" items)" />
+            </StackPanel>
+
+            <TextBox x:Name="txtPesTeamSearch" DockPanel.Dock="Top"
+                     TextChanged="txtPesTeamSearch_TextChanged"/>
+
+            <ListBox x:Name="lstPesTeams" ItemsSource="{Binding Path=TeamsView}"
+                     SelectionChanged="lstPesTeams_SelectionChanged"
+                     VirtualizingPanel.IsVirtualizing="True">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Path=TeamName}" 
+                            ToolTipService.ToolTip="{Binding Path=ID}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <GridSplitter Grid.Row="1" Grid.Column="1" ResizeDirection="Columns" Width="5" HorizontalAlignment="Stretch" />
+
+        <DockPanel Grid.Row="1" Grid.Column="2">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="3">
+                <TextBlock Text="PES 21 Players  (" />
+                <TextBlock Text="{Binding ElementName=lstPesPlayers, Path=Items.Count}" />
+                <TextBlock Text=" items)" />
+            </StackPanel>
+
+            <GroupBox Header="Transfer to" DockPanel.Dock="Bottom">
+                <DockPanel >
+                    <Button x:Name="btnTransferPlayer" Content="Transfer"
+                            Click="btnTransferPlayer_Click"
+                            DockPanel.Dock="Right" Margin="5 0 0 0" Padding="3"/>
+
+                    <ComboBox x:Name="cmbTransferTeam" IsEditable="True"  
+                          ItemsSource="{Binding ClubTeams}" DisplayMemberPath="TeamName" />
+                </DockPanel>
+            </GroupBox>
+            
+            <TextBox x:Name="txtPesPlayerSearch" DockPanel.Dock="Top"
+                     TextChanged="txtPesPlayerSearch_TextChanged"/>
+
+            <DataGrid x:Name="lstPesPlayers" ItemsSource="{Binding Path=TeamPlayersView}"
+                      PreviewKeyUp="lstPesPlayers_PreviewKeyUp" HeadersVisibility="Column"
+                      LoadingRow="lstPesPlayers_LoadingRow"
+                      AutoGenerateColumns="False" IsReadOnly="True"
+                      SelectionUnit="FullRow" SelectionMode="Single"
+                      dd:DragDrop.IsDragSource="True"
+                      dd:DragDrop.IsDropTarget="True"
+                      dd:DragDrop.DropHandler="{Binding}"
+                      dd:DragDrop.UseDefaultDragAdorner="True">
+                <!--AllowDrop="True" 
+                      PreviewMouseDown="lstPesPlayers_PreviewMouseDown"
+                      DragDrop.DragEnter="lstPesPlayers_DragEnter"
+                      DragDrop.DragOver="lstPesPlayers_DragOver"
+                      DragDrop.DragLeave="lstPesPlayers_DragLeave"
+                      DragDrop.Drop="lstPesPlayers_Drop"-->
+                      
+                
+                <DataGrid.Columns>
+                    <DataGridTextColumn x:Name="colPesPlayersShirtNoClub" Header="#" Binding="{Binding ShirtNoClub}"/>
+                    <DataGridTextColumn x:Name="colPesPlayersPosClub" Header="Pos" Binding="{Binding PosClubStr}" />
+                    <DataGridTextColumn x:Name="colPesPlayersShirtNoNational" Header="#" Binding="{Binding ShirtNoNational}"
+                                        Visibility="Collapsed" />
+                    <DataGridTextColumn x:Name="colPesPlayersPosNational" Header="Pos" Binding="{Binding PosNationalStr}"
+                                        Visibility="Collapsed"/>
+                    <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name}" ToolTipService.ToolTip="{Binding ID}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+
+        <GridSplitter Grid.Row="1" Grid.Column="3" ResizeDirection="Columns" Width="5" HorizontalAlignment="Stretch" />
+
+        <DockPanel Grid.Row="1" Grid.Column="4">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="3">
+                <TextBlock Text="PES 21 All Players  (" />
+                <TextBlock Text="{Binding ElementName=lstAllPesPlayers, Path=Items.Count}" />
+                <TextBlock Text=" items)" />
+            </StackPanel>
+
+            <GroupBox Header="Transfer to" DockPanel.Dock="Bottom">
+                <DockPanel >
+                    <Button x:Name="btnTransferPlayerFromGlobal" Content="Transfer"
+                            Click="btnTransferPlayerFromGlobal_Click"
+                            DockPanel.Dock="Right" Margin="5 0 0 0" Padding="3"/>
+
+                    <ComboBox x:Name="cmbTransferTeamFromGlobal" IsEditable="True"  
+                          ItemsSource="{Binding ClubTeams}" DisplayMemberPath="TeamName" />
+                </DockPanel>
+            </GroupBox>
+
+            <TextBox x:Name="txtAllPesPlayerSearch" DockPanel.Dock="Top"
+                     TextChanged="txtAllPesPlayerSearch_TextChanged"/>
+
+            <ListBox x:Name="lstAllPesPlayers" ItemsSource="{Binding Source={x:Static pes:Players.List}, Mode=OneWay}"
+                     VirtualizingPanel.IsVirtualizing="True">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Path=Name}" 
+                            ToolTipService.ToolTip="{Binding Path=TooltipText}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <GridSplitter Grid.Row="1" Grid.Column="5" ResizeDirection="Columns" Width="5" HorizontalAlignment="Stretch" />
+
+        <DockPanel Grid.Row="1" Grid.Column="6">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="3">
+                <TextBlock Text="SofaScore Teams  (" />
+                <TextBlock Text="{Binding ElementName=lstSofaTeams, Path=Items.Count}" />
+                <TextBlock Text=" items)" />
+            </StackPanel>
+
+            <TextBox x:Name="txtSofaTeamSearch" DockPanel.Dock="Top"
+                     TextChanged="txtSofaTeamSearch_TextChanged"/>
+
+            <GroupBox Header="League" DockPanel.Dock="Bottom">
+                <ComboBox x:Name="cmbSofaLeague"
+                          SelectionChanged="cmbSofaLeague_SelectionChanged">
+                    <ComboBoxItem Content="Premier League" Tag="17" />
+                    <ComboBoxItem Content="LaLiga" Tag="8" />
+                    <ComboBoxItem Content="Bundesliga" Tag="35" />
+                    <ComboBoxItem Content="Serie A" Tag="23" />
+                    <ComboBoxItem Content="Ligue 1" Tag="35" />
+                    <ComboBoxItem Content="Super Lig" Tag="52" />
+                </ComboBox>
+            </GroupBox>
+
+            <ListBox x:Name="lstSofaTeams" ItemsSource="{Binding Path=SofaTeamsView}" DisplayMemberPath="TeamName" 
+                     SelectionChanged="lstSofaTeams_SelectionChanged"
+                     MouseDoubleClick="lstSofaTeams_MouseDoubleClick"/>
+        </DockPanel>
+
+        <GridSplitter Grid.Row="1" Grid.Column="7" ResizeDirection="Columns" Width="5" HorizontalAlignment="Stretch" />
+
+        <DockPanel Grid.Row="1" Grid.Column="8">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="3">
+                <TextBlock Text="SofaScore Players  (" />
+                <TextBlock Text="{Binding ElementName=lstSofaPlayers, Path=Items.Count}" />
+                <TextBlock Text=" items)" />
+            </StackPanel>
+
+            <TextBox x:Name="txtSofaPlayerSearch" DockPanel.Dock="Top"
+                     TextChanged="txtSofaPlayerSearch_TextChanged"/>
+
+            <ListBox x:Name="lstSofaPlayers" ItemsSource="{Binding ElementName=lstSofaTeams, Path=SelectedItem.Players}"/>
+        </DockPanel>
+
+        <StatusBar Grid.Row="2" Grid.ColumnSpan="10">
+            <StatusBarItem>
+                <TextBlock x:Name="txtStatus" />
+            </StatusBarItem>
+
+            <StatusBarItem HorizontalAlignment="Right">
+                <ProgressBar x:Name="prgStatus" Width="100" Height="15"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
